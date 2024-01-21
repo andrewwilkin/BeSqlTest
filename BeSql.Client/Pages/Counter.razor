@@ -1,4 +1,6 @@
 ﻿@page "/counter"
+@using BeSql.Client.Data
+@using Microsoft.EntityFrameworkCore
 @rendermode InteractiveAuto
 
 <PageTitle>Counter</PageTitle>
@@ -10,10 +12,20 @@
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 
 @code {
+    [Inject] IDbContextFactory<OfflineDbContext> _dbContextFactory { get; set; }
+    
     private int currentCount = 0;
 
     private void IncrementCount()
     {
         currentCount++;
     }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var count = await dbContext.CalculationResults.CountAsync();        
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
 }
